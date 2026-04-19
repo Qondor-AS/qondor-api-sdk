@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-__version__ = "0.1.0rc1"
+__version__ = "0.1.0"
 
 from ._base import ApiModel as ApiModel
 from .client import QondorClient as QondorClient
