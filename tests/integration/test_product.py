@@ -82,34 +82,22 @@ class TestProduct:
 
     # --- Price sub-resource ---
 
-    @pytest.mark.skip(
-        reason=(
-            "TODO: revisit when env access available — "
-            "Qondor dev env rejects ART-001/ART-002; valid ArtNo format unknown"
-        )
-    )
     async def test_add_price(self, created_product: ProductDetails, qondor_client: QondorClient):
         ref = unique_ref("price")
         result = await qondor_client.product.add_price(AddPrice(
             product_id=created_product.id,
             out_price_excl_vat=1000.0,
-            out_price_incl_vat=1250.0,
+            out_price_incl_vat=1000.0,
             in_price_excl_vat=800.0,
-            in_price_incl_vat=1000.0,
+            in_price_incl_vat=800.0,
             external_reference=ref,
-            art_no="ART-001",
+            art_no="0",
         ))
         assert isinstance(result, ProductPriceOut)
         assert result.id is not None
         TestProduct._price_id = result.id
         TestProduct._price_ref = ref
 
-    @pytest.mark.skip(
-        reason=(
-            "TODO: revisit when env access available — "
-            "Qondor dev env rejects ART-001/ART-002; valid ArtNo format unknown"
-        )
-    )
     async def test_update_price(self, created_product: ProductDetails, qondor_client: QondorClient):
         price_id = getattr(TestProduct, "_price_id", None)
         if price_id is None:
@@ -118,16 +106,13 @@ class TestProduct:
             id=price_id,
             product_id=created_product.id,
             out_price_excl_vat=1100.0,
-            out_price_incl_vat=1375.0,
+            out_price_incl_vat=1100.0,
             in_price_excl_vat=850.0,
-            in_price_incl_vat=1062.5,
+            in_price_incl_vat=850.0,
             external_reference=TestProduct._price_ref,
-            art_no="ART-002",
+            art_no="0",
         ))
 
-    @pytest.mark.skip(
-        reason="TODO: revisit when env access available — depends on test_add_price which is skipped"
-    )
     async def test_delete_price(self, created_product: ProductDetails, qondor_client: QondorClient):
         price_id = getattr(TestProduct, "_price_id", None)
         if price_id is None:

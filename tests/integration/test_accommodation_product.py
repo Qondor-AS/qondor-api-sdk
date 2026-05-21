@@ -141,13 +141,7 @@ class TestAccommodationProduct:
         ))
 
     # --- Night sub-resource ---
-    # NOTE: night create/update require a valid ArtNo, which depends on the
-    # environment's article catalog. See test_product.py:test_add_price for
-    # the equivalent skip on regular product prices.
 
-    @pytest.mark.skip(
-        reason="TODO: needs a valid ArtNo from the env's article catalog (same as price tests)",
-    )
     async def test_create_room_night(self, qondor_client: QondorClient):
         product_id = getattr(TestAccommodationProduct, "_product_id", None)
         room_id = getattr(TestAccommodationProduct, "_room_id", None)
@@ -161,13 +155,13 @@ class TestAccommodationProduct:
                 external_reference=ref,
                 check_in_date="2026-06-01",
                 allotment=5,
-                initial_rate=1500.0,
+                initial_rate=1200.0,
                 prices=[AccommodationRoomNightPrice(
-                    art_no="ART-001",
+                    art_no="0",
                     out_price_excl_vat=1200.0,
-                    out_price_incl_vat=1500.0,
+                    out_price_incl_vat=1200.0,
                     in_price_excl_vat=1000.0,
-                    in_price_incl_vat=1250.0,
+                    in_price_incl_vat=1000.0,
                 )],
             )
         )
@@ -175,7 +169,6 @@ class TestAccommodationProduct:
         assert result.id is not None
         TestAccommodationProduct._night_id = result.id
 
-    @pytest.mark.skip(reason="TODO: depends on test_create_room_night which is skipped")
     async def test_update_room_night(self, qondor_client: QondorClient):
         product_id = getattr(TestAccommodationProduct, "_product_id", None)
         room_id = getattr(TestAccommodationProduct, "_room_id", None)
@@ -191,7 +184,6 @@ class TestAccommodationProduct:
             )
         )
 
-    @pytest.mark.skip(reason="TODO: depends on test_create_room_night which is skipped")
     async def test_delete_room_night(self, qondor_client: QondorClient):
         product_id = getattr(TestAccommodationProduct, "_product_id", None)
         room_id = getattr(TestAccommodationProduct, "_room_id", None)
