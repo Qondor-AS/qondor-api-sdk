@@ -86,18 +86,17 @@ class TestAccommodationProduct:
         if results:
             assert isinstance(results[0], AccommodationProductSummary)
 
-    async def test_update(
-        self,
-        created_product_group: ProductGroupDetails,
-        qondor_client: QondorClient,
-    ):
+    async def test_update(self, qondor_client: QondorClient):
         product_id = getattr(TestAccommodationProduct, "_product_id", None)
         if product_id is None:
             pytest.skip("No accommodation product created")
+        # NOTE: do NOT pass product_group_id here. The API6 update validator has
+        # a bug (UpdateAccommodationProductContract.cs:119) that compares
+        # productGroup.OfferId against accommodationProduct.ProductGroup.Id
+        # (should be .OfferId), which always fails.
         await qondor_client.accommodation_product.update(UpdateAccommodationProduct(
             id=product_id,
             name="IntTest Accommodation Updated",
-            product_group_id=created_product_group.id,
             offer_intro_text="Updated accommodation intro",
             offer_description="Updated accommodation description",
             offer_quantity=2,
