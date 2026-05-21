@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 
 from qondor_api_sdk.client import _RESOURCE_GROUPS, QondorClient
+from qondor_api_sdk.modules.accommodation_product import AccommodationProductModule
 from qondor_api_sdk.modules.customer import CustomerModule
 from qondor_api_sdk.modules.offer import OfferModule
 from qondor_api_sdk.modules.product import ProductModule
@@ -38,6 +39,7 @@ class TestClientDefaults:
         assert client.office._prefix == "/Office/v1"
         assert client.contact_person._prefix == "/ContactPerson/v1"
         assert client.statistics._prefix == "/Statistics/v1"
+        assert client.accommodation_product._prefix == "/AccommodationProduct/v1"
 
     def test_module_types(self, client: QondorClient):
         assert isinstance(client.customer, CustomerModule)
@@ -46,6 +48,7 @@ class TestClientDefaults:
         assert isinstance(client.product, ProductModule)
         assert isinstance(client.product_group, ProductGroupModule)
         assert isinstance(client.supplier, SupplierModule)
+        assert isinstance(client.accommodation_product, AccommodationProductModule)
 
 
 class TestClientCustomAuth:
@@ -75,10 +78,11 @@ class TestClientCustomAuth:
 
 
 class TestResourceGroups:
-    def test_all_nine_groups_defined(self):
+    def test_all_groups_defined(self):
         expected = {
             "Customer", "Project", "Offer", "Product", "ProductGroup",
             "Supplier", "Office", "ContactPerson", "Statistics",
+            "AccommodationProduct",
         }
         assert set(_RESOURCE_GROUPS.keys()) == expected
 
