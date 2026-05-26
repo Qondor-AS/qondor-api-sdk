@@ -8,7 +8,10 @@ from dataclasses import dataclass
 
 import pytest
 import pytest_asyncio
+from pydantic import BaseModel
 
+from qondor_api_sdk import models as _models  # noqa: F401 -- register every ApiModel subclass
+from qondor_api_sdk._base import ApiModel
 from qondor_api_sdk.client import QondorClient
 from qondor_api_sdk.models.contact_person import CreateContactPerson
 from qondor_api_sdk.models.customer import CreateCustomer
@@ -21,6 +24,44 @@ from qondor_api_sdk.models.supplier import CreateSupplier
 from .helpers import unique_email, unique_ref
 
 logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Catch SDK/API response-field drift
+# ---------------------------------------------------------------------------
+
+def _all_api_models() -> list[type[BaseModel]]:
+    seen: set[type[BaseModel]] = set()
+    stack: list[type[BaseModel]] = [ApiModel]
+    while stack:
+        cls = stack.pop()
+        if cls in seen:
+            continue
+        seen.add(cls)
+        stack.extend(cls.__subclasses__())
+    return list(seen)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _forbid_unexpected_response_fields():
+    """Tighten every ApiModel to extra='forbid' for the integration session.
+
+    Any field the live API returns that is not declared on the corresponding
+    model will cause the response to fail parsing — surfacing typos or stale
+    model definitions. Restored on teardown.
+    """
+    classes = _all_api_models()
+    originals = {cls: dict(cls.model_config) for cls in classes}
+    for cls in classes:
+        cls.model_config = {**cls.model_config, "extra": "forbid"}
+        cls.model_rebuild(force=True)
+    try:
+        yield
+    finally:
+        for cls, original in originals.items():
+            cls.model_config = original
+            cls.model_rebuild(force=True)
+
 
 # ---------------------------------------------------------------------------
 # Environment URL mapping
