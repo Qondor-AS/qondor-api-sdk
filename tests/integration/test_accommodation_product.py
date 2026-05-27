@@ -184,6 +184,28 @@ class TestAccommodationProduct:
             )
         )
 
+    async def test_get_populated_tree(self, qondor_client: QondorClient):
+        """GET the product once room+night+prices exist and walk all four levels.
+
+        This is the only test that deserializes the full
+        product -> rooms -> nights -> prices tree. Combined with the
+        extra='forbid' fixture it validates every field at every depth and
+        proves the numberOfRooms -> allotment alias resolves through nesting.
+        Runs after the night update (allotment is now 10) and before deletes.
+        """
+        product_id = getattr(TestAccommodationProduct, "_product_id", None)
+        night_id = getattr(TestAccommodationProduct, "_night_id", None)
+        if product_id is None or night_id is None:
+            pytest.skip("No populated accommodation product/room/night")
+        fetched = await qondor_client.accommodation_product.get(product_id)
+        assert isinstance(fetched, AccommodationProductDetails)
+        assert fetched.rooms, "expected at least one room"
+        assert fetched.rooms[0].nights, "expected at least one night"
+        night = fetched.rooms[0].nights[0]
+        assert night.allotment == 10
+        assert night.prices, "expected at least one price"
+        assert night.prices[0].out_price_excl_vat == 1200.0
+
     async def test_delete_room_night(self, qondor_client: QondorClient):
         product_id = getattr(TestAccommodationProduct, "_product_id", None)
         room_id = getattr(TestAccommodationProduct, "_room_id", None)
