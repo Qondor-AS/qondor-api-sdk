@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
-from qondor_api_sdk.models.accommodation_product import AccommodationRoomDetails
+from qondor_api_sdk.models.accommodation_product import (
+    AccommodationProductDetails,
+    AccommodationRoomDetails,
+)
 from qondor_api_sdk.models.customer import CustomerDetails, CustomerSummary
 from qondor_api_sdk.models.enums import (
     AccommodationOfferPriceType,
     BillingModel,
     DesignTemplate,
     ISO4217CurrencyCode,
+    OfferProductAnswer,
     OfferStatus,
     ProjectStatus,
 )
@@ -172,6 +176,21 @@ class TestDeserialization:
         })
         assert isinstance(room.billing_model, BillingModel)
         assert room.billing_model == BillingModel.COMMISSION
+
+    def test_accommodation_product_details_enums(self):
+        d = AccommodationProductDetails.model_validate({
+            "id": 10,
+            "name": "Grand Hotel",
+            "offerDesignTemplate": 1,
+            "offerAnswer": 1,
+            "foreignInPriceCurrency": 826,
+        })
+        assert isinstance(d.offer_design_template, DesignTemplate)
+        assert d.offer_design_template == DesignTemplate.IMAGE_LEFT_TEXT_RIGHT
+        assert isinstance(d.offer_answer, OfferProductAnswer)
+        assert d.offer_answer == OfferProductAnswer.YES
+        assert isinstance(d.foreign_in_price_currency, ISO4217CurrencyCode)
+        assert d.foreign_in_price_currency == ISO4217CurrencyCode.GBP
 
 
 class TestSpecQuirks:
