@@ -84,6 +84,16 @@ class CreateAccommodationRoom(ApiModel):
 
 
 class UpdateAccommodationRoom(ApiModel):
+    """Update an accommodation room.
+
+    Warning: ``is_initial_rate_incl_vat`` must be supplied on every update.
+    The API6 contract types this field as a non-nullable bool, so omitting it
+    binds to ``false`` server-side and silently flips the room's
+    ``SavingsAmountCalculatedFrom`` to ``ExclVat`` — corrupting the rate basis
+    for subsequent night-price calculations. Always pass the current value
+    explicitly until the API6 contract is changed to allow nulls.
+    """
+
     id: int | None = None
     external_reference: str | None = None
     accommodation_product_id: int | None = None
