@@ -68,8 +68,6 @@ def _forbid_unexpected_response_fields():
 # ---------------------------------------------------------------------------
 
 _ENV_URLS = {
-    "prod": "https://qondor.azure-api.net/Prod",
-    "test": "https://qondor.azure-api.net/Test",
     "dev": "https://qondor.azure-api.net/Dev",
 }
 
@@ -94,7 +92,6 @@ class EnvConfig:
 
 SEED: dict[str, dict] = {
     "dev": dict(office_id=2, customer_id=1, project_manager_id=5, team_id=1, contact_person_id=6),
-    "test": dict(office_id=102, customer_id=15409, project_manager_id=264636, team_id=19, contact_person_id=264718),
 }
 
 
