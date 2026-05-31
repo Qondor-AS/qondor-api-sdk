@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .accommodation_product import *  # noqa: F401,F403
 from .contact_person import *  # noqa: F401,F403
 from .customer import *  # noqa: F401,F403
 from .enums import *  # noqa: F401,F403

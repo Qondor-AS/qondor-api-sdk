@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import httpx
 
+from .modules.accommodation_product import AccommodationProductModule
 from .modules.contact_person import ContactPersonModule
 from .modules.customer import CustomerModule
 from .modules.offer import OfferModule
@@ -32,6 +33,7 @@ _RESOURCE_GROUPS: dict[str, str] = {
     "Office": "Office/v1",
     "ContactPerson": "ContactPerson/v1",
     "Statistics": "Statistics/v1",
+    "AccommodationProduct": "AccommodationProduct/v1",
 }
 
 
@@ -79,6 +81,7 @@ class QondorClient:
         self.office = OfficeModule(self._http, self._module_prefix("Office"))
         self.contact_person = ContactPersonModule(self._http, self._module_prefix("ContactPerson"))
         self.statistics = StatisticsModule(self._http, self._module_prefix("Statistics"))
+        self.accommodation_product = AccommodationProductModule(self._http, self._module_prefix("AccommodationProduct"))
 
     def _module_prefix(self, resource_group: str) -> str:
         """Build per-module URL prefix.

@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
+import importlib
 import logging
 import os
+import pkgutil
 from dataclasses import dataclass
 
 import pytest
 import pytest_asyncio
+from pydantic import BaseModel
 
+from qondor_api_sdk import models as _models
+from qondor_api_sdk._base import ApiModel
 from qondor_api_sdk.client import QondorClient
 from qondor_api_sdk.models.contact_person import CreateContactPerson
 from qondor_api_sdk.models.customer import CreateCustomer
@@ -22,13 +27,57 @@ from .helpers import unique_email, unique_ref
 
 logger = logging.getLogger(__name__)
 
+
+# ---------------------------------------------------------------------------
+# Catch SDK/API response-field drift
+# ---------------------------------------------------------------------------
+
+# Force-import every model module so all ApiModel subclasses are registered
+# before _all_api_models() walks __subclasses__(). Without this, a new module
+# file that's accidentally left out of models/__init__.py would silently retain
+# extra='ignore' and bypass the drift-detection fixture below.
+for _module_info in pkgutil.iter_modules(_models.__path__):
+    importlib.import_module(f"qondor_api_sdk.models.{_module_info.name}")
+
+
+def _all_api_models() -> list[type[BaseModel]]:
+    seen: set[type[BaseModel]] = set()
+    stack: list[type[BaseModel]] = [ApiModel]
+    while stack:
+        cls = stack.pop()
+        if cls in seen:
+            continue
+        seen.add(cls)
+        stack.extend(cls.__subclasses__())
+    return list(seen)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _forbid_unexpected_response_fields():
+    """Tighten every ApiModel to extra='forbid' for the integration session.
+
+    Any field the live API returns that is not declared on the corresponding
+    model will cause the response to fail parsing — surfacing typos or stale
+    model definitions. Restored on teardown.
+    """
+    classes = _all_api_models()
+    originals = {cls: dict(cls.model_config) for cls in classes}
+    for cls in classes:
+        cls.model_config = {**cls.model_config, "extra": "forbid"}
+        cls.model_rebuild(force=True)
+    try:
+        yield
+    finally:
+        for cls, original in originals.items():
+            cls.model_config = original
+            cls.model_rebuild(force=True)
+
+
 # ---------------------------------------------------------------------------
 # Environment URL mapping
 # ---------------------------------------------------------------------------
 
 _ENV_URLS = {
-    "prod": "https://qondor.azure-api.net/Prod",
-    "test": "https://qondor.azure-api.net/Test",
     "dev": "https://qondor.azure-api.net/Dev",
 }
 
@@ -53,7 +102,6 @@ class EnvConfig:
 
 SEED: dict[str, dict] = {
     "dev": dict(office_id=2, customer_id=1, project_manager_id=5, team_id=1, contact_person_id=6),
-    "test": dict(office_id=102, customer_id=15409, project_manager_id=264636, team_id=19, contact_person_id=264718),
 }
 
 

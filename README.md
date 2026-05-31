@@ -46,6 +46,7 @@ client = QondorClient(
 | `client.offer`      | Offer CRUD and currencies    |
 | `client.product_group` | Product group CRUD        |
 | `client.product`    | Product CRUD and pricing     |
+| `client.accommodation_product` | Accommodation product CRUD (rooms, nights) |
 | `client.supplier`   | Supplier CRUD                |
 | `client.office`     | Office lookup                |
 | `client.contact_person` | Contact person CRUD      |

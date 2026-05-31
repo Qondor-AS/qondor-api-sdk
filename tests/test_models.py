@@ -2,11 +2,17 @@
 
 from __future__ import annotations
 
+from qondor_api_sdk.models.accommodation_product import (
+    AccommodationProductDetails,
+    AccommodationRoomDetails,
+)
 from qondor_api_sdk.models.customer import CustomerDetails, CustomerSummary
 from qondor_api_sdk.models.enums import (
     AccommodationOfferPriceType,
+    BillingModel,
     DesignTemplate,
     ISO4217CurrencyCode,
+    OfferProductAnswer,
     OfferStatus,
     ProjectStatus,
 )
@@ -135,6 +141,8 @@ class TestDeserialization:
         }
         product = ProductDetails.model_validate(api_response)
         assert product.id == 50
+        assert isinstance(product.billing_model, BillingModel)
+        assert product.billing_model == BillingModel.NET_PRICE
         assert product.prices is not None
         assert len(product.prices) == 1
         assert product.prices[0].out_price_excl_vat == 1500.0
@@ -159,6 +167,30 @@ class TestDeserialization:
         assert pg.id == 20
         assert pg.heading == "Accommodation"
         assert pg.offer_design_template == DesignTemplate.IMAGE_LEFT_TEXT_RIGHT
+
+    def test_accommodation_room_details_billing_model(self):
+        room = AccommodationRoomDetails.model_validate({
+            "id": 100,
+            "name": "Double Room",
+            "billingModel": 2,
+        })
+        assert isinstance(room.billing_model, BillingModel)
+        assert room.billing_model == BillingModel.COMMISSION
+
+    def test_accommodation_product_details_enums(self):
+        d = AccommodationProductDetails.model_validate({
+            "id": 10,
+            "name": "Grand Hotel",
+            "offerDesignTemplate": 1,
+            "offerAnswer": 1,
+            "foreignInPriceCurrency": 826,
+        })
+        assert isinstance(d.offer_design_template, DesignTemplate)
+        assert d.offer_design_template == DesignTemplate.IMAGE_LEFT_TEXT_RIGHT
+        assert isinstance(d.offer_answer, OfferProductAnswer)
+        assert d.offer_answer == OfferProductAnswer.YES
+        assert isinstance(d.foreign_in_price_currency, ISO4217CurrencyCode)
+        assert d.foreign_in_price_currency == ISO4217CurrencyCode.GBP
 
 
 class TestSpecQuirks:

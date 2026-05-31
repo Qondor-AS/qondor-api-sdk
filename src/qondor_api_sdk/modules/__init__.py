@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .accommodation_product import AccommodationProductModule as AccommodationProductModule
 from .contact_person import ContactPersonModule as ContactPersonModule
 from .customer import CustomerModule as CustomerModule
 from .offer import OfferModule as OfferModule
