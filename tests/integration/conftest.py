@@ -2,15 +2,17 @@
 
 from __future__ import annotations
 
+import importlib
 import logging
 import os
+import pkgutil
 from dataclasses import dataclass
 
 import pytest
 import pytest_asyncio
 from pydantic import BaseModel
 
-from qondor_api_sdk import models as _models  # noqa: F401 -- register every ApiModel subclass
+from qondor_api_sdk import models as _models
 from qondor_api_sdk._base import ApiModel
 from qondor_api_sdk.client import QondorClient
 from qondor_api_sdk.models.contact_person import CreateContactPerson
@@ -29,6 +31,14 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Catch SDK/API response-field drift
 # ---------------------------------------------------------------------------
+
+# Force-import every model module so all ApiModel subclasses are registered
+# before _all_api_models() walks __subclasses__(). Without this, a new module
+# file that's accidentally left out of models/__init__.py would silently retain
+# extra='ignore' and bypass the drift-detection fixture below.
+for _module_info in pkgutil.iter_modules(_models.__path__):
+    importlib.import_module(f"qondor_api_sdk.models.{_module_info.name}")
+
 
 def _all_api_models() -> list[type[BaseModel]]:
     seen: set[type[BaseModel]] = set()
